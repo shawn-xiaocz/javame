@@ -1,0 +1,66 @@
+syntax = "proto3";
+option go_package = ".;api";
+option java_package = "io.javame.api";
+option java_multiple_files = true;
+
+enum TransactionType {
+  BUY = 0;
+  SELL = 1;
+}
+
+//定义请求结构
+message OrderRequest {
+  string uuid = 1; // 用户唯一标识
+  string oid = 2; // 订单唯一标识
+  string symbol = 3; // 交易对
+  TransactionType transaction = 4; // 交易方向，buy/sale
+  double price = 5; // 交易价格
+  double volume = 6; // 交易数量
+  // Java clients should use decimal strings; legacy doubles remain wire compatible.
+  string price_decimal = 7;
+  string volume_decimal = 8;
+}
+
+//定义响应结构
+message OrderResponse {
+  int32 code = 1;
+  string message = 2;
+  string command_id = 3;
+  string status = 4;
+}
+
+//定义下单服务
+service Order {
+  rpc DoOrder(OrderRequest) returns (OrderResponse){}
+  rpc DeleteOrder(OrderRequest) returns (OrderResponse){}
+  rpc GetOrder(OrderQueryRequest) returns (OrderStateResponse){}
+  rpc GetCommand(CommandQueryRequest) returns (CommandStateResponse){}
+}
+
+message OrderQueryRequest {
+  string uuid = 1;
+  string oid = 2;
+  string symbol = 3;
+}
+
+message CommandQueryRequest {
+  string uuid = 1;
+  string command_id = 2;
+}
+
+message OrderStateResponse {
+  string oid = 1;
+  string symbol = 2;
+  TransactionType transaction = 3;
+  string price = 4;
+  string volume = 5;
+  string remaining_volume = 6;
+  string status = 7;
+}
+
+message CommandStateResponse {
+  string command_id = 1;
+  string status = 2;
+  string error_code = 3;
+  string message = 4;
+}

@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.8'
+    id 'com.google.protobuf' version '0.9.5'
+}
+
+group = 'io.javame'
+version = '1.0.0'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:3.5.8')
+    implementation platform('io.grpc:grpc-bom:1.76.0')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-mysql'
+    implementation 'com.rabbitmq:amqp-client'
+    implementation 'io.grpc:grpc-netty-shaded'
+    implementation 'io.grpc:grpc-protobuf'
+    implementation 'io.grpc:grpc-stub'
+    implementation 'com.google.protobuf:protobuf-java:4.32.1'
+    compileOnly 'javax.annotation:javax.annotation-api:1.3.2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.21.3')
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:mysql'
+    testImplementation 'org.testcontainers:rabbitmq'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+sourceSets.main.proto.srcDirs = ['api']
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:4.32.1' }
+    plugins { grpc { artifact = 'io.grpc:protoc-gen-grpc-java:1.76.0' } }
+    generateProtoTasks { all().configureEach { plugins { grpc {} } } }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:all', '-parameters']
+}
+tasks.named('test') {
+    useJUnitPlatform()
+    exclude '**/*IntegrationTest.class'
+    testLogging { events 'failed', 'skipped' }
+}
+tasks.register('integrationTest', Test) {
+    description = 'Runs MySQL, RabbitMQ and API integration scenarios using Docker.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    include '**/*IntegrationTest.class'
+    systemProperty 'javame.mysql.image', providers.gradleProperty('mysqlImage').getOrElse('mysql:8.4.8')
+    shouldRunAfter tasks.test
+    testLogging { events 'passed', 'failed', 'skipped' }
+}
+tasks.named('check') { dependsOn tasks.integrationTest }
+tasks.named('jar') { enabled = false }

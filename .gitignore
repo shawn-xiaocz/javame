@@ -1,0 +1,44 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Java / IDE output
+*.class
+out/
+target/
+.factorypath
+.springBeans
+.apt_generated/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# Local runtime and test files
+.env
+.env.*
+!.env.example
+*.log
+logs/
+*.pid
+
+# Local databases and broker data
+mysql-data/
+rabbit-data/
+postgres-data/
+*.mv.db
+
+# OS files
+.DS_Store
+Thumbs.db

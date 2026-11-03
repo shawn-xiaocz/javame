@@ -1,0 +1,55 @@
+server:
+  address: ${HTTP_HOST:127.0.0.1}
+  port: ${HTTP_PORT:8080}
+  shutdown: graceful
+spring:
+  application:
+    name: javame
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/javame?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true}
+    username: ${DATABASE_USER:javame}
+    password: ${DATABASE_PASSWORD}
+    hikari:
+      transaction-isolation: TRANSACTION_READ_COMMITTED
+      maximum-pool-size: 16
+      connection-timeout: 5000
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  task:
+    scheduling:
+      pool:
+        size: 2
+      shutdown:
+        await-termination: true
+        await-termination-period: 15s
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+javame:
+  api-key: ${JAVAME_API_KEY}
+  grpc-host: ${GRPC_HOST:127.0.0.1}
+  grpc-port: ${GRPC_PORT:8088}
+  grpc-certificate: ${GRPC_CERTIFICATE:}
+  grpc-private-key: ${GRPC_PRIVATE_KEY:}
+  worker-enabled: ${WORKER_ENABLED:true}
+  publisher-enabled: ${PUBLISHER_ENABLED:true}
+  batch-size: 50
+  worker-delay-ms: 20
+  publisher-delay-ms: 100
+  rabbit-uri: ${RABBITMQ_URI:amqp://guest:guest@localhost:5672/}
+  rabbit-confirm-timeout-ms: 5000
+  markets:
+    btc2usdt:
+      price-scale: 8
+      volume-scale: 8
+    eth2usdt:
+      price-scale: 8
+      volume-scale: 8
